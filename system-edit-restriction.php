@@ -37,6 +37,12 @@ class SystemEditRestriction
 		return str_replace('www.','', $_SERVER['HTTP_HOST']);
 	}	
 	
+	public function Nonce_checker($value, $action_name)
+	{
+		if ( 	!isset($value) || !wp_verify_nonce($value, $action_name) ) {
+			die("not allowed due to interal_error_151");
+		}
+	}
 	
 	public function check_enable_privilegies()
 	{
@@ -145,6 +151,8 @@ class SystemEditRestriction
 			//IF whitelist updated
 			if (!empty($_POST['opt_of_whitelist_ips'])) 
 			{
+				$this->Nonce_checker($_POST['update_nonce'],'uupnonce');
+				
 				//update setting
 				update_option('optin_for_sep_ipss',$_POST['opt_of_whitelist_ips']);
 				//change IP file
@@ -197,6 +205,7 @@ class SystemEditRestriction
 					</div>
 
 					<br/><div style="clear:both;"></div>
+					<input type="hidden" name="update_nonce" value="<?php echo wp_create_nonce('uupnonce');?>" />
 					<input type="submit"  value="SAVE" onclick="return check_sep_ips();" />
 					<script type="text/javascript">
 					function check_sep_ips()
