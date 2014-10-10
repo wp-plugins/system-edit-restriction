@@ -73,7 +73,6 @@ class SystemEditRestriction
 			
 			
 			$restrictions = array(
-			'/wp-admin/options-general.php?page=my-system-edit-restriction',
 			'/wp-admin/widgets.php',
 			'/wp-admin/widgets.php',
 			'/wp-admin/user-new.php',
@@ -98,7 +97,9 @@ class SystemEditRestriction
 			'/wp-admin/moderation.php',
 			'/wp-admin/menu-header.php',
 			'/wp-admin/menu.php',
-			'/wp-admin/edit-comments.php'
+			'/wp-admin/edit-comments.php',
+			//any 3rd party plugins' menu pages, added under "settings"
+			'/wp-admin/options-general.php?page='
 			);
 
 			foreach ( $restrictions as $restriction ) {
