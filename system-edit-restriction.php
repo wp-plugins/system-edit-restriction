@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: System edit restriction
-Description: No-one will be able edit/modify system files(theme+plugins) from Dashboard,even admins. Only from FTP can be edited... Secure to your site!!  It is useful, when you share Admin access to others - They wont be able to modify system PHP files.
+Description: Security!! No-one will be able edit/modify system files(theme+plugins) from Wordpress Dashboard,even admins (So, Only from FTP can be edited)...   It is useful, when you share Admin access to others (SEE OTHER MUST-HAVE PLUGINS : http://codesphpjs.blogspot.com/2014/10/must-have-wordpress-plugins.html ) . IF PROBLEMS, JUST REMOVE PLUGIN.
 contributors: selnomeria
 Version: 1.1
 License: GPLv2

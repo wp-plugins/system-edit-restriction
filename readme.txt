@@ -5,13 +5,12 @@ Requires at least: 3.0
 Tested up to: 3.5
 Stable tag: 0.1
 
-No-one will be able edit/modify system files(theme+plugins) from Dashboard,even admins. Only from FTP can be edited... Secure to your site!!
+Secure your site!! No-one will be able edit/modify system files(theme+plugins) from Wordpress Dashboard!
 
 
 == Description ==
 
-It is useful, when you share Admin access to others - They wont be able to modify system PHP files.
-
+Secure your site!! No-one will be able edit/modify system files(theme+plugins) from Wordpress Dashboard,even admins (So, only from FTP can be edited)...   It is useful, when you share Admin access to others (SEE OTHER MUST-HAVE PLUGINS : http://codesphpjs.blogspot.com/2014/10/must-have-wordpress-plugins.html ). IF PROBLEMS, JUST REMOVE PLUGIN.
 
 == Installation ==
 
