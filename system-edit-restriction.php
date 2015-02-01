@@ -8,52 +8,30 @@ License: GPLv2
 */
 $GLOBALS['SystemEditProtectionzzz'] = new SystemEditRestriction;
 
-class SystemEditRestriction
-{
-	//const ID = 'protect';
+class SystemEditRestriction {
 	protected $fileName = 'login_protection_';
 	protected $StartSYMBOL		='<?php //';
-
-	
-	
-	
-	public function __construct()
-	{
+	public function __construct()	{
 		add_action('admin_menu', array($this,'add_menu_buttttton'));
 		add_action('admin_init', array($this,'start_admin_restrict_checkerr'));
 		register_activation_hook( __FILE__,  array($this, 'sep_activate'));
 		register_deactivation_hook( __FILE__,  array($this, 'sep_deactivate'));
 	}
-	
-	
-	
-	public function blockedMessage()
-	{
-		return  "(HOWEVER,IF YOU BLOCK YOURSELF, enter your wordpress directory (from FTP) and add your IP into this file: /ALLOWED_IP/ALLOWED_IPs_FOR_WP_MODIFICATION.php)";
+	public function sep_activate()	{		}	
+	public function sep_deactivate(){unlink($this->allowed_ips_filee());}	
+	public function blockedMessage(){return '(HOWEVER,IF YOU BLOCK YOURSELF, enter FTP folder "/ALLOWED_IP/" and add your IP into the file.)';}
+	public function domainn()		{return str_replace('www.','', $_SERVER['HTTP_HOST']);	}	
+	public function Nonce_checker($value, $action_name)	{
+		if ( !isset($value) || !wp_verify_nonce($value, $action_name) ) {die("not allowed due to interal_error_151");}
 	}
 	
-	public function domainn()
-	{
-		return str_replace('www.','', $_SERVER['HTTP_HOST']);
-	}	
-	
-	public function Nonce_checker($value, $action_name)
-	{
-		if ( 	!isset($value) || !wp_verify_nonce($value, $action_name) ) {
-			die("not allowed due to interal_error_151");
-		}
-	}
-	
-	public function check_enable_privilegies()
-	{
+	public function check_enable_privilegies(){
 		$allwd_ips = file_get_contents($this->allowed_ips_filee());
 
 		//check if FILE CONTAINS USER'S IP. if IP not found, then check, if PLUGIN should restrict him anyway.
 		if (strpos($allwd_ips, $_SERVER['REMOTE_ADDR']) === false){
 			//check if restriction is ENABLED
-			if (get_option('optin_for_sep_ipss') == 2){
-				return false;
-			}
+			if (get_option('optin_for_sep_ipss') == 2){		return false;	}
 		}
 		return true;
 	}
@@ -112,22 +90,11 @@ class SystemEditRestriction
 	}
 	
 	
-	public function sep_activate()
-	{
-		//
-	}	
-	public function sep_deactivate()
-	{
-		unlink($this->allowed_ips_filee());
-	}	
-	
-	
-	public function allowed_ips_filee()
-	{
+
+	public function allowed_ips_filee()	{
 		//initial values
 		$bakcup_of_ipfile = get_option("backup_allowed_ips_modify_". $this->domainn() );
-		$Value = !empty($bakcup_of_ipfile)?  $bakcup_of_ipfile : $this->StartSYMBOL. '101.101.101.101 (its James, my friend)|||102.102.102.102(its my pc),';
-		
+		$Value = !empty($bakcup_of_ipfile)?  $bakcup_of_ipfile : $this->StartSYMBOL. '101.101.101.101 (e.g. its James, my friend)|||'.$_SERVER['REMOTE_ADDR'].' (its my pc),';
 		//file path
 		$pt_folder = ABSPATH.'/ALLOWED_IP/'. $this->domainn();		if(!file_exists($pt_folder)){mkdir($pt_folder, 0755, true);}
 		$file = $pt_folder .'/ALLOWED_IPs_FOR_WP_MODIFICATION.php';	if(!file_exists($file))		{file_put_contents($file, $Value);}
@@ -138,15 +105,7 @@ class SystemEditRestriction
 		add_submenu_page( 'options-general.php', 'System Edit Restrict', 'System Edit Restriction', 'manage_options', 'my-system-edit-restriction', array($this,'sep_output') ); 
 	}
 
-	
-	
-
-	public function sep_output()
-	{
-	?>
-	
-	
-	
+	public function sep_output() { ?>
 			<!-- ENABLE/DISABLE OPTIONS -->
 			<?php
 			//IF whitelist updated
@@ -174,51 +133,41 @@ class SystemEditRestriction
 			<form method="post" action="">
 				<p class="submit">
 					
-					<div class="white_list_ipps" style="background-color: #1EE41E;padding: 5px; margin:0 0 0 20%;width: 50%;">
-						<div style="font-size:1.2em;font-weight:bold;">
-							RESTRICT PLUGIN/THEME EDIT&INSTALL from DASHBOARD: (<a href="javascript:alert('1)OFF - No changes. any admin will have a full access. \r\n2) ON - Only the listed IPs can  EDIT&INSTALL PLUGINS or THEMES. Another IP (even if he is admin) cant EDIT&INSTALL them. <?php echo $this->blockedMessage();?> \r\n');">read more!!</a>):
-						</div>
-						<table style="border: 1px solid;"><tbody>
-							<tr><td>OFF </td><td><input onclick="lg_radiod();" type="radio" name="opt_of_whitelist_ips" value="1" <?php echo $d1;?> /></td></tr>
-							<tr><td>ON</td><td><input onclick="lg_radiod();" type="radio" name="opt_of_whitelist_ips" value="2" <?php echo $d2;?> /></td></tr>
-						</tbody></table>
-						<div style="float:right;">(your IP is <b style="color:red; background-color:yellow;"><?php echo $_SERVER['REMOTE_ADDR'];?></b>)</div>
-						<br/>
-						
-						<div id="DIV_whiteipielddd" style="overflow-y:auto;">
-							<?php
-							$liness=explode("|||",$allowed_ips);
-							?>
-							<textarea id="whiteips_fieldd" style="width:100%;height:150px;" name="sep_white_IPS"><?php foreach ($liness as $line) {echo $line."\r\n";}?></textarea>
-						</div>
-						
-						<script type="text/javascript">
-						function lg_radiod()
-						{
-							var valllue = document.querySelector('input[name="opt_of_whitelist_ips"]:checked').value;
-							var DIVipfieldd = document.getElementById("DIV_whiteipielddd");
-
-							if(valllue != "1")	{DIVipfieldd.style.opacity = "1";}
-							else				{DIVipfieldd.style.opacity = "0.3";	}
-						}
-						lg_radiod();
-						</script>
+				<div class="white_list_ipps" style="background-color: #1EE41E;padding: 5px; margin:0 0 0 20%;width: 50%;">
+					<div style="font-size:1.2em;font-weight:bold;">
+						RESTRICT PLUGIN/THEME EDIT&INSTALL from DASHBOARD: (<a href="javascript:alert('1)OFF - No changes. any admin will have a full access. \r\n2) ON - Only the listed IPs can  EDIT&INSTALL PLUGINS or THEMES. Another IP (even if he is admin) cant EDIT&INSTALL them. <?php echo $this->blockedMessage();?> \r\n');">read more!!</a>):
 					</div>
+		<table style="border:1px solid;"><tbody>
+			<tr><td>OFF	</td><td><input onclick="lg_radiod();" type="radio" name="opt_of_whitelist_ips" value="1" <?php echo $d1;?> /></td></tr>
+			<tr><td>ON	</td><td><input onclick="lg_radiod();" type="radio" name="opt_of_whitelist_ips" value="2" <?php echo $d2;?> /></td></tr>
+		</tbody></table>
+					<div style="float:right;">(your IP is <b style="color:red;background-color:yellow;"><?php echo $_SERVER['REMOTE_ADDR'];?></b>)</div>
+					<br/>
+					<div id="DIV_whiteipielddd" style="overflow-y:auto;">
+						<?php	$liness=explode("|||",$allowed_ips); ?>
+						<textarea id="whiteips_fieldd" style="width:100%;height:150px;" name="sep_white_IPS"><?php foreach ($liness as $line) {echo $line."\r\n";}?></textarea>
+					</div>
+					
+					<script type="text/javascript">
+					function lg_radiod(){
+						var valllue = document.querySelector('input[name="opt_of_whitelist_ips"]:checked').value;
+						document.getElementById("DIV_whiteipielddd").style.opacity = (valllue != "1") ? "1" : "0.3";
+					}
+					lg_radiod();
+					</script>
+				</div>
 
 					<br/><div style="clear:both;"></div>
 					<input type="hidden" name="update_nonce" value="<?php echo wp_create_nonce('uupnonce');?>" />
 					<input type="submit"  value="SAVE" onclick="return check_sep_ips();" />
 					<script type="text/javascript">
-					function check_sep_ips()
-					{
+					function check_sep_ips(){
 						var IPLIST_VALUE=document.getElementById("whiteips_fieldd").value;
 						var user_ip="<?php echo $_SERVER['REMOTE_ADDR'];?>";
 						
 						var TurnedONOFF = document.querySelector('input[name="opt_of_whitelist_ips"]:checked').value;
-						if (TurnedONOFF != "1")
-						{
-							if (IPLIST_VALUE.indexOf(user_ip) == -1)
-							{
+						if (TurnedONOFF != "1")	{
+							if (IPLIST_VALUE.indexOf(user_ip) == -1){
 								if(!confirm("YOUR IP(" + user_ip +") is not in list! Are you sure you want to continue?")){return false;}
 							}
 						}
