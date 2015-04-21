@@ -22,60 +22,44 @@ class SystemEditRestriction {
 	public function blockedMessage(){return '(HOWEVER,IF YOU BLOCK YOURSELF, enter FTP folder "/ALLOWED_IP/" and add your IP into the file.)';}
 	public function domainn()		{return str_replace('www.','', $_SERVER['HTTP_HOST']);	}	
 	public function Nonce_checker($value, $action_name)	{
-		if ( !isset($value) || !wp_verify_nonce($value, $action_name) ) {die("not allowed due to interal_error_151");}
+		if ( !isset($value) || !wp_verify_nonce($value, $action_name) ) {die("not allowed due to SYSTEM_EDIT_RESTRICTION");}
 	}
 	
 	public function check_enable_privilegies(){
-		$allwd_ips = file_get_contents($this->allowed_ips_filee());
-
-		//check if FILE CONTAINS USER'S IP. if IP not found, then check, if PLUGIN should restrict him anyway.
-		if (strpos($allwd_ips, $_SERVER['REMOTE_ADDR']) === false){
-			//check if restriction is ENABLED
-			if (get_option('optin_for_sep_ipss') == 2){		return false;	}
+		//check, if  RESTRICTION enabled
+		if (get_option('optin_for_sep_ipss') == 2){
+			$allwd_ips = file_get_contents($this->allowed_ips_filee());
+			//check - if USER's ip address not found, then RESTRICT!!!
+			if (stripos($allwd_ips, $_SERVER['REMOTE_ADDR']) === false){ return false; }	
 		}
 		return true;
 	}
 	
+	/* not needed, no danger here as i consider.
+	public function disable_admin_ajax(){
+		if( defined('DOING_AJAX') && DOING_AJAX ) {
+			if (!$this->check_enable_privilegies())	{
+				define( 'DISALLOW_FILE_MODS', true );
+				//from /wp-admin/admin_ajax.php
+				$disallowed___core_actions_get = array(	);
+				$disallowed___core_actions_post = array();
+				if ( ! empty( $_GET['action'] ) ...
+			}
+		}
+	}
+	*/
 	
-	public function start_admin_restrict_checkerr()
-	{
-		if (!$this->check_enable_privilegies())
-		{
+	
+
+	
+	public function start_admin_restrict_checkerr()	{
+		if (!$this->check_enable_privilegies())	{
 			define( 'DISALLOW_FILE_MODS', true );
-				//remove_menu_page( 'edit-comments.php' );
-				//remove_menu_page( 'themes.php' );
-				//remove_menu_page( 'plugins.php' );
-				//remove_menu_page( 'admin.php?page=mp_st' );
-				//remove_menu_page( 'admin.php?page=cp_main' );
+				//remove_menu_page( 'edit-comments.php' );remove_menu_page( 'themes.php' );remove_menu_page( 'plugins.php' );
+				//remove_menu_page( 'admin.php?page=mp_st' );remove_menu_page( 'admin.php?page=cp_main' );
 				//remove_submenu_page( 'edit.php?post_type=product', 'edit-tags.php?taxonomy=product_category&amp;post_type=product' );
-			
-			
-			$restrictions = array(
-			'/wp-admin/widgets.php',
-			'/wp-admin/widgets.php',
-			'/wp-admin/user-new.php',
-			'/wp-admin/upgrade-functions.php',
-			'/wp-admin/upgrade.php',
-			'/wp-admin/themes.php',
-			'/wp-admin/theme-install.php',
-			'/wp-admin/theme-editor.php',
-			'/wp-admin/setup-config.php',
-			'/wp-admin/plugins.php',
-			'/wp-admin/plugin-install.php',
-			'/wp-admin/options-head.php',
-			'/wp-admin/network.php',
-			'/wp-admin/ms-users.php',
-			'/wp-admin/ms-upgrade-network.php',
-			'/wp-admin/ms-themes.php',
-			'/wp-admin/ms-sites.php',
-			'/wp-admin/ms-options.php',
-			'/wp-admin/ms-edit.php',
-			'/wp-admin/ms-delete-site.php',
-			'/wp-admin/ms-admin.php',
-			'/wp-admin/moderation.php',
-			'/wp-admin/menu-header.php',
-			'/wp-admin/menu.php',
-			'/wp-admin/edit-comments.php',
+
+			$restrictions = array('/wp-admin/widgets.php','/wp-admin/widgets.php','/wp-admin/user-new.php',	'/wp-admin/upgrade-functions.php','/wp-admin/upgrade.php',	'/wp-admin/themes.php',	'/wp-admin/theme-install.php',	'/wp-admin/theme-editor.php','/wp-admin/setup-config.php','/wp-admin/plugins.php',	'/wp-admin/plugin-install.php','/wp-admin/options-head.php','/wp-admin/network.php',	'/wp-admin/ms-users.php','/wp-admin/ms-upgrade-network.php','/wp-admin/ms-themes.php',	'/wp-admin/ms-sites.php','/wp-admin/ms-options.php','/wp-admin/ms-edit.php','/wp-admin/ms-delete-site.php','/wp-admin/ms-admin.php','/wp-admin/moderation.php','/wp-admin/menu-header.php','/wp-admin/menu.php','/wp-admin/edit-comments.php',
 			//any 3rd party plugins' menu pages, added under "settings"
 			'/wp-admin/options-general.php?page='
 			);
@@ -90,7 +74,6 @@ class SystemEditRestriction {
 	}
 	
 	
-
 	public function allowed_ips_filee()	{
 		//initial values
 		$bakcup_of_ipfile = get_option("backup_allowed_ips_modify_". $this->domainn() );
@@ -102,11 +85,7 @@ class SystemEditRestriction {
 	}
 	
 	public function add_menu_buttttton() {
-		add_submenu_page( 'options-general.php', 'System Edit Restrict', 'System Edit Restriction', 'manage_options', 'my-system-edit-restriction', array($this,'sep_output') ); 
-	}
-
-	public function sep_output() { ?>
-			<!-- ENABLE/DISABLE OPTIONS -->
+		add_submenu_page('options-general.php', 'System Edit Restrict', 'System Edit Restrict', 'manage_options', 'system-edit-restriction-page', array($this,'sep_output') ); } public function sep_output() { ?>
 			<?php
 			//IF whitelist updated
 			if (!empty($_POST['opt_of_whitelist_ips'])) 
@@ -142,8 +121,7 @@ class SystemEditRestriction {
 			<tr><td>ON	</td><td><input onclick="lg_radiod();" type="radio" name="opt_of_whitelist_ips" value="2" <?php echo $d2;?> /></td></tr>
 		</tbody></table>
 					<div style="float:right;">(your IP is <b style="color:red;background-color:yellow;"><?php echo $_SERVER['REMOTE_ADDR'];?></b>)</div>
-					<br/>
-					<div id="DIV_whiteipielddd" style="overflow-y:auto;">
+				<br/><div id="DIV_whiteipielddd" style="overflow-y:auto;">
 						<?php	$liness=explode("|||",$allowed_ips); ?>
 						<textarea id="whiteips_fieldd" style="width:100%;height:150px;" name="sep_white_IPS"><?php foreach ($liness as $line) {echo $line."\r\n";}?></textarea>
 					</div>
