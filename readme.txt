@@ -10,7 +10,11 @@ Secure your site!! No-one will be able edit/modify system files(theme+plugins) f
 
 == Description ==
 
-Secure your site!! No-one will be able edit/modify system files(theme+plugins) from Wordpress Dashboard,even admins (So, only from FTP can be edited)...   It is useful, when you share Admin access to others (P.S.  OTHER MUST-HAVE PLUGINS FOR EVERYONE: http://bitly.com/MWPLUGINS  ). IF PROBLEMS, JUST REMOVE PLUGIN.
+Secure your site!! No-one will be able edit/modify system files(theme+plugins) from Wordpress Dashboard,even admins (So, only from FTP can be edited)...   It is useful, when you share Admin access to others. IF PROBLEMS, JUST REMOVE PLUGIN.
+
+
+>  (P.S. Note! This is a <a href="http://codesphpjs.blogspot.com/2014/10/nsp-non-slowing-plugins-for-wordpress.html" target="_blank">Non-Slowing</a> Plugin.  See OTHER MUST-HAVE PLUGINS FOR EVERYONE: http://bitly.com/MWPLUGINS  )
+
 
 == Installation ==
 
