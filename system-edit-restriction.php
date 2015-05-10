@@ -17,9 +17,9 @@ class SystemEditRestriction {
 		register_activation_hook( __FILE__,  array($this, 'sep_activate'));
 		register_deactivation_hook( __FILE__,  array($this, 'sep_deactivate'));
 	}
-	public function sep_activate()	{		}	
+	public function sep_activate()	{ $old_dir = ABSPATH.'/ALLOWED_IP/';  $new_dir =ABSPATH.'/wp-content/ALLOWED_IP/'; if (is_dir($old_dir)) {rename($old_dir,$new_dir);} 	}	
 	public function sep_deactivate(){unlink($this->allowed_ips_filee());}	
-	public function blockedMessage(){return '(HOWEVER,IF YOU BLOCK YOURSELF, enter FTP folder "/ALLOWED_IP/" and add your IP into the file.)';}
+	public function blockedMessage(){return '(HOWEVER,IF YOU BLOCK YOURSELF, enter FTP folder "/WP-CONTENT-  ALLOWED_IP/" and add your IP into the file.)';}
 	public function domainn()		{return str_replace('www.','', $_SERVER['HTTP_HOST']);	}	
 	public function Nonce_checker($value, $action_name)	{
 		if ( !isset($value) || !wp_verify_nonce($value, $action_name) ) {die("not allowed due to SYSTEM_EDIT_RESTRICTION");}
@@ -79,7 +79,7 @@ class SystemEditRestriction {
 		$bakcup_of_ipfile = get_option("backup_allowed_ips_modify_". $this->domainn() );
 		$Value = !empty($bakcup_of_ipfile)?  $bakcup_of_ipfile : $this->StartSYMBOL. '101.101.101.101 (e.g. its James, my friend)|||'.$_SERVER['REMOTE_ADDR'].' (its my pc),';
 		//file path
-		$pt_folder = ABSPATH.'/ALLOWED_IP/'. $this->domainn();		if(!file_exists($pt_folder)){mkdir($pt_folder, 0755, true);}
+		$pt_folder = ABSPATH.'/wp-content/ALLOWED_IP/'. $this->domainn();		if(!file_exists($pt_folder)){mkdir($pt_folder, 0755, true);}
 		$file = $pt_folder .'/ALLOWED_IPs_FOR_WP_MODIFICATION.php';	if(!file_exists($file))		{file_put_contents($file, $Value);}
 		return $file;
 	}
