@@ -5,18 +5,22 @@ Description: Security!! No-one will be able edit/modify system files(theme+plugi
 contributors: selnomeria
 Version: 1.1
 License: GPLv2
-*/
-$GLOBALS['SystemEditProtectionzzz'] = new SystemEditRestriction;
+*/ if ( ! defined( 'ABSPATH' ) ) exit; //Exit if accessed directly
+
 
 class SystemEditRestriction {
 	protected $fileName = 'login_protection_';
 	protected $StartSYMBOL		='<?php //';
 	public function __construct()	{
+		add_action('activated_plugin', array($this,'activat_redirect'));
 		add_action('admin_menu', array($this,'add_menu_buttttton'));
 		add_action('admin_init', array($this,'start_admin_restrict_checkerr'));
 		register_activation_hook( __FILE__,  array($this, 'sep_activate'));
 		register_deactivation_hook( __FILE__,  array($this, 'sep_deactivate'));
 	}
+	//REDIRECT SETTINGS PAGE (after activation)
+	public function activat_redirect( $plugin ) { if( $plugin == plugin_basename( __FILE__ ) ){ exit( wp_redirect(admin_url( 'admin.php?page=system-edit-restriction-page')) ); } }
+	public function sep_activate_redirect()	{ $old_dir = ABSPATH.'/ALLOWED_IP/';  $new_dir =ABSPATH.'/wp-content/ALLOWED_IP/'; if (is_dir($old_dir)){rename($old_dir,$new_dir);} }	
 	public function sep_activate()	{ $old_dir = ABSPATH.'/ALLOWED_IP/';  $new_dir =ABSPATH.'/wp-content/ALLOWED_IP/'; if (is_dir($old_dir)) {rename($old_dir,$new_dir);} 	}	
 	public function sep_deactivate(){unlink($this->allowed_ips_filee());}	
 	public function blockedMessage(){return '(HOWEVER,IF YOU BLOCK YOURSELF, enter FTP folder "/WP-CONTENT-  ALLOWED_IP/" and add your IP into the file.)';}
@@ -158,3 +162,4 @@ class SystemEditRestriction {
 	<?php
 	}
 }
+$GLOBALS['SystemEditProtectionzzz'] = new SystemEditRestriction;
