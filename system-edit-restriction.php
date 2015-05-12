@@ -3,7 +3,7 @@
 Plugin Name: System edit restriction
 Description: Security!! No-one will be able edit/modify system files(theme+plugins) from Wordpress Dashboard,even admins (So, Only from FTP can be edited)...   It is useful, when you share Admin access to others (P.S.  OTHER MUST-HAVE PLUGINS FOR EVERYONE: http://bitly.com/MWPLUGINS  ) . IF PROBLEMS, JUST REMOVE PLUGIN.
 contributors: selnomeria
-Version: 1.1
+Version: 1.2
 License: GPLv2
 */ if ( ! defined( 'ABSPATH' ) ) exit; //Exit if accessed directly
 
