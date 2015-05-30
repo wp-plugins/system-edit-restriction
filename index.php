@@ -23,13 +23,11 @@ class SystemEditRestriction {
 	public function sep_activate_redirect($plugin) { if($plugin == plugin_basename( __FILE__ )){ exit( wp_redirect(admin_url( 'admin.php?page=system-edit-restriction-page')) ); } }
 	public function sep_activate()	{
 			//old_version updating
-		$old_dir =ABSPATH.'ALLOWED_IP/';
-		$new_dir =ABSPATH.'wp-content/ALLOWED_IP/'; 
-			if (is_dir($old_dir)) {@rename($old_dir,$new_dir);} 
-		$old_dir = ABSPATH.'wp-content/ALLOWED_IP/'.str_replace('www.','', $_SERVER['HTTP_HOST']).'/';
-		$new_dir = ABSPATH.'wp-content/ALLOWED_IP/'.$this->site_nm().'/';
+		$new_dir =ABSPATH.'wp-content/ALLOWED_IP/'.$this->site_nm().'/'; 
+		$old_dir =ABSPATH.'ALLOWED_IP/'.str_replace('www.','', $_SERVER['HTTP_HOST']).'/';
 			if (file_exists($old_dir.$this->Allow_ips_file)) {@mkdir($new_dir, 0777); @rename($old_dir.$this->Allow_ips_file,$new_dir.$this->Allow_ips_file);@rmdir($old_dir);} 
-	
+		$old_dir = ABSPATH.'wp-content/ALLOWED_IP/'.str_replace('www.','', $_SERVER['HTTP_HOST']).'/';
+			if (file_exists($old_dir.$this->Allow_ips_file)) {@mkdir($new_dir, 0777); @rename($old_dir.$this->Allow_ips_file,$new_dir.$this->Allow_ips_file);@rmdir($old_dir);} 
 	}	
 	public function sep_deactivate(){unlink($this->allowed_ips_filee());}	
 	public function blockedMessage(){return '(HOWEVER,IF YOU BLOCK YOURSELF, enter FTP folder "/WP-CONTENT----ALLOWED_IP/" and add your IP into the file.)';}
