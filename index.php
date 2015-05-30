@@ -3,7 +3,7 @@
 Plugin Name: System edit restriction
 Description: Security!! No-one will be able edit/modify system files(theme+plugins) from Wordpress Dashboard,even admins (So, Only from FTP can be edited)...   It is useful, when you share Admin access to others (P.S.  OTHER MUST-HAVE PLUGINS FOR EVERYONE: http://bitly.com/MWPLUGINS  ) . IF PROBLEMS, JUST REMOVE PLUGIN.
 contributors: selnomeria
-Version: 1.2
+Version: 1.21
 License: GPLv2
 */ if ( ! defined( 'ABSPATH' ) ) exit; //Exit if accessed directly
 
@@ -11,6 +11,7 @@ License: GPLv2
 class SystemEditRestriction {
 	protected $fileName = 'login_protection_';
 	protected $StartSYMBOL		='<?php //';
+	public $Allow_ips_file='ALLOWED_IPs_FOR_WP_MODIFICATION.php';
 	public function __construct()	{
 		add_action('activated_plugin', array($this,'sep_activate_redirect'));
 		add_action('admin_menu', array($this,'add_menu_buttttton'));
@@ -22,17 +23,17 @@ class SystemEditRestriction {
 	public function sep_activate_redirect($plugin) { if($plugin == plugin_basename( __FILE__ )){ exit( wp_redirect(admin_url( 'admin.php?page=system-edit-restriction-page')) ); } }
 	public function sep_activate()	{
 			//old_version updating
-		$old_dir = ABSPATH.'ALLOWED_IP/';  
+		$old_dir =ABSPATH.'ALLOWED_IP/';
 		$new_dir =ABSPATH.'wp-content/ALLOWED_IP/'; 
 			if (is_dir($old_dir)) {@rename($old_dir,$new_dir);} 
-		$old_dir = ABSPATH.'wp-content/ALLOWED_IP/'.str_replace('www.','', $_SERVER['HTTP_HOST']).'/'; 
-		$new_dir = ABSPATH.'wp-content/ALLOWED_IP/'.$this->site_nm(); 
-			if (is_dir($old_dir)) {@rename($old_dir,$new_dir);} 
+		$old_dir = ABSPATH.'wp-content/ALLOWED_IP/'.str_replace('www.','', $_SERVER['HTTP_HOST']).'/';
+		$new_dir = ABSPATH.'wp-content/ALLOWED_IP/'.$this->site_nm().'/';
+			if (file_exists($old_dir.$this->Allow_ips_file)) {@mkdir($new_dir, 0777); @rename($old_dir.$this->Allow_ips_file,$new_dir.$this->Allow_ips_file);@rmdir($old_dir);} 
 	
 	}	
 	public function sep_deactivate(){unlink($this->allowed_ips_filee());}	
 	public function blockedMessage(){return '(HOWEVER,IF YOU BLOCK YOURSELF, enter FTP folder "/WP-CONTENT----ALLOWED_IP/" and add your IP into the file.)';}
-	public function domainn()		{return str_replace('www.','', $_SERVER['HTTP_HOST']);	}	
+	public function site_nm()		{return preg_replace('/\W/si','_',str_replace('://www.','://', home_url()) );     }	
 	public function Nonce_checker($value, $action_name)	{
 		if ( !isset($value) || !wp_verify_nonce($value, $action_name) ) {die("not allowed due to SYSTEM_EDIT_RESTRICTION");}
 	}
@@ -77,7 +78,7 @@ class SystemEditRestriction {
 			);
 
 			foreach ( $restrictions as $restriction ) {
-				if ( strpos($_SERVER['REQUEST_URI'],$restriction) !== false) {
+				if ( stripos($_SERVER['REQUEST_URI'],$restriction) !== false) {
 					die('no access to this page. error_534 ... <a href="./">Go Back</a> <br/><br/>'.$this->blockedMessage());
 				}
 			}
@@ -88,11 +89,11 @@ class SystemEditRestriction {
 	
 	public function allowed_ips_filee()	{
 		//initial values
-		$bakcup_of_ipfile = get_option("backup_allowed_ips_modify_". $this->domainn() );
+		$bakcup_of_ipfile = get_option("backup_allowed_ips_modify_". $this->site_nm() );
 		$Value = !empty($bakcup_of_ipfile)?  $bakcup_of_ipfile : $this->StartSYMBOL. '101.101.101.101 (e.g. its James, my friend)|||'.$_SERVER['REMOTE_ADDR'].' (its my pc),';
 		//file path
-		$pt_folder = ABSPATH.'/wp-content/ALLOWED_IP/'. $this->domainn();		if(!file_exists($pt_folder)){mkdir($pt_folder, 0755, true);}
-		$file = $pt_folder .'/ALLOWED_IPs_FOR_WP_MODIFICATION.php';	if(!file_exists($file))		{file_put_contents($file, $Value);}
+		$pt_folder = ABSPATH.'/wp-content/ALLOWED_IP/'. $this->site_nm();		if(!file_exists($pt_folder)){mkdir($pt_folder, 0755, true);}
+		$file = $pt_folder .'/'.$this->Allow_ips_file;	if(!file_exists($file))		{file_put_contents($file, $Value);}
 		return $file;
 	}
 	
@@ -112,7 +113,7 @@ class SystemEditRestriction {
 					$final	= str_replace("\r\n",		"|||",	$final);
 				file_put_contents($this->allowed_ips_filee(), $this->StartSYMBOL .$final );
 				//make backup
-				update_option("backup_allowed_ips_modify_". $this->domainn() ,  $this->StartSYMBOL .$final);
+				update_option("backup_allowed_ips_modify_". $this->site_nm() ,  $this->StartSYMBOL .$final);
 			}
 		
 			$allowed_ips 	= str_replace($this->StartSYMBOL, '', file_get_contents($this->allowed_ips_filee()) );
