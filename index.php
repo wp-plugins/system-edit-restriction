@@ -15,7 +15,7 @@ class SystemEditRestriction {
 	public function __construct()	{
 		add_action('activated_plugin', array($this,'sep_activate_redirect'));
 		add_action('admin_menu', array($this,'add_menu_buttttton'));
-		add_action('admin_init', array($this,'start_admin_restrict_checkerr'));
+		add_action('admin_init', array($this,'start_admin_restrict_checkerr'),0);
 		register_activation_hook( __FILE__,  array($this, 'sep_activate'));
 		register_deactivation_hook( __FILE__,  array($this, 'sep_deactivate'));
 	}
@@ -65,17 +65,18 @@ class SystemEditRestriction {
 	
 	public function start_admin_restrict_checkerr()	{
 		if (!$this->check_enable_privilegies())	{
+			define( 'DISALLOW_FILE_EDIT', true );
 			define( 'DISALLOW_FILE_MODS', true );
 				//remove_menu_page( 'edit-comments.php' );remove_menu_page( 'themes.php' );remove_menu_page( 'plugins.php' );
 				//remove_menu_page( 'admin.php?page=mp_st' );remove_menu_page( 'admin.php?page=cp_main' );
 				//remove_submenu_page( 'edit.php?post_type=product', 'edit-tags.php?taxonomy=product_category&amp;post_type=product' );
 
-			$restrictions = array('/wp-admin/widgets.php','/wp-admin/widgets.php','/wp-admin/user-new.php',	'/wp-admin/upgrade-functions.php','/wp-admin/upgrade.php',	'/wp-admin/themes.php',	'/wp-admin/theme-install.php',	'/wp-admin/theme-editor.php','/wp-admin/setup-config.php','/wp-admin/plugins.php',	'/wp-admin/plugin-install.php','/wp-admin/options-head.php','/wp-admin/network.php',	'/wp-admin/ms-users.php','/wp-admin/ms-upgrade-network.php','/wp-admin/ms-themes.php',	'/wp-admin/ms-sites.php','/wp-admin/ms-options.php','/wp-admin/ms-edit.php','/wp-admin/ms-delete-site.php','/wp-admin/ms-admin.php','/wp-admin/moderation.php','/wp-admin/menu-header.php','/wp-admin/menu.php','/wp-admin/edit-comments.php',
+			$restricted_places = array('/wp-admin/widgets.php','/wp-admin/widgets.php','/wp-admin/user-new.php',	'/wp-admin/upgrade-functions.php','/wp-admin/upgrade.php',	'/wp-admin/themes.php',	'/wp-admin/theme-install.php',	'/wp-admin/theme-editor.php','/wp-admin/setup-config.php','/wp-admin/plugins.php',	'/wp-admin/plugin-install.php','/wp-admin/options-head.php','/wp-admin/network.php',	'/wp-admin/ms-users.php','/wp-admin/ms-upgrade-network.php','/wp-admin/ms-themes.php',	'/wp-admin/ms-sites.php','/wp-admin/ms-options.php','/wp-admin/ms-edit.php','/wp-admin/ms-delete-site.php','/wp-admin/ms-admin.php','/wp-admin/moderation.php','/wp-admin/menu-header.php','/wp-admin/menu.php','/wp-admin/edit-comments.php',
 			//any 3rd party plugins' menu pages, added under "settings"
 			'/wp-admin/options-general.php?page='
 			);
 
-			foreach ( $restrictions as $restriction ) {
+			foreach ( $restricted_places as $restriction ) {
 				if ( stripos($_SERVER['REQUEST_URI'],$restriction) !== false) {
 					die('no access to this page. error_534 ... <a href="./">Go Back</a> <br/><br/>'.$this->blockedMessage());
 				}
