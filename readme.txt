@@ -3,7 +3,7 @@ Contributors: selnomeria
 Tags: disable, system,plugins,theme,edit,modification,restrict,protect
 Requires at least: 3.3
 Tested up to: 4.2
-Stable tag: 1.21
+Stable tag: 1.23
 
 Secure your site!! No-one will be able edit/modify system files(theme+plugins) from Wordpress Dashboard!
 

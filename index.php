@@ -3,24 +3,31 @@
 Plugin Name: System edit restriction
 Description: Security!! No-one will be able edit/modify system files(theme+plugins) from Wordpress Dashboard,even admins (So, Only from FTP can be edited)...   It is useful, when you share Admin access to others (P.S.  OTHER MUST-HAVE PLUGINS FOR EVERYONE: http://bitly.com/MWPLUGINS  ) . IF PROBLEMS, JUST REMOVE PLUGIN.
 contributors: selnomeria
-Version: 1.21
+Version: 1.23
 License: GPLv2
 */ if ( ! defined( 'ABSPATH' ) ) exit; //Exit if accessed directly
 
 
 class SystemEditRestriction {
-	protected $fileName = 'login_protection_';
-	protected $StartSYMBOL		='<?php //';
-	public $Allow_ips_file='ALLOWED_IPs_FOR_WP_MODIFICATION.php';
+	public $Allow_ips_file	='ALLOWED_IPs_FOR_WP_MODIFICATION.php';
+	public $plugin_pageslug	='system-edit-restriction-page';
+	public $StartSYMBOL		='<?php ZZZ //';
+				//======= Disallowed URLS =========//	
+	public $restricted_places = array(
+				'user-new.php',	'upgrade-functions.php','upgrade.php',	'themes.php',	'theme-install.php', 'theme-editor.php','setup-config.php','plugins.php',	'plugin-install.php','options-head.php','network.php',	'ms-users.php','ms-upgrade-network.php','ms-themes.php',	'ms-sites.php','ms-options.php','ms-edit.php','ms-delete-site.php','ms-admin.php','moderation.php','menu-header.php','menu.php','edit-comments.php',
+				//======= Disallowed PLUGINS ========= any 3rd party plugins' menu pages, added under "settings"
+				'page=system-edit-restriction-page',
+				);
+	
 	public function __construct()	{
 		add_action('activated_plugin', array($this,'sep_activate_redirect'));
 		add_action('admin_menu', array($this,'add_menu_buttttton'));
-		add_action('admin_init', array($this,'start_admin_restrict_checkerr'),0);
+		add_action('init', array($this,'start_admin_restrict_checkerr'),0);
 		register_activation_hook( __FILE__,  array($this, 'sep_activate'));
 		register_deactivation_hook( __FILE__,  array($this, 'sep_deactivate'));
 	}
 	//REDIRECT SETTINGS PAGE (after activation)
-	public function sep_activate_redirect($plugin) { if($plugin == plugin_basename( __FILE__ )){ exit( wp_redirect(admin_url( 'admin.php?page=system-edit-restriction-page')) ); } }
+	public function sep_activate_redirect($plugin) { if($plugin == plugin_basename( __FILE__ )){ exit( wp_redirect(admin_url( 'admin.php?page='.$this->plugin_pageslug)) ); } }
 	public function sep_activate()	{
 			//old_version updating
 		$new_dir =ABSPATH.'wp-content/ALLOWED_IP/'.$this->site_nm().'/'; 
@@ -30,22 +37,13 @@ class SystemEditRestriction {
 			if (file_exists($old_dir.$this->Allow_ips_file)) {@mkdir($new_dir, 0777); @rename($old_dir.$this->Allow_ips_file,$new_dir.$this->Allow_ips_file);@rmdir($old_dir);} 
 	}	
 	public function sep_deactivate(){unlink($this->allowed_ips_filee());}	
-	public function blockedMessage(){return '(HOWEVER,IF YOU BLOCK YOURSELF, enter FTP folder "/WP-CONTENT----ALLOWED_IP/" and add your IP into the file.)';}
+	public function blockedMessage(){return '(HOWEVER,IF YOU BLOCK YOURSELF, enter FTP folder /WP-CONTENT----ALLOWED_IP/ and add your IP('.$_SERVER['REMOTE_ADDR'].') into that file.)';}
 	public function site_nm()		{return preg_replace('/\W/si','_',str_replace('://www.','://', home_url()) );     }	
 	public function Nonce_checker($value, $action_name)	{
 		if ( !isset($value) || !wp_verify_nonce($value, $action_name) ) {die("not allowed due to SYSTEM_EDIT_RESTRICTION");}
 	}
 	
-	public function check_enable_privilegies(){
-		//check, if  RESTRICTION enabled
-		if (get_option('optin_for_sep_ipss') == 2){
-			$allwd_ips = file_get_contents($this->allowed_ips_filee());
-			//check - if USER's ip address not found, then RESTRICT!!!
-			if (stripos($allwd_ips, $_SERVER['REMOTE_ADDR']) === false){ return false; }	
-		}
-		return true;
-	}
-	
+
 	/* not needed, no danger here as i consider.
 	public function disable_admin_ajax(){
 		if( defined('DOING_AJAX') && DOING_AJAX ) {
@@ -62,42 +60,48 @@ class SystemEditRestriction {
 	
 	
 
-	
-	public function start_admin_restrict_checkerr()	{
+	public function check_enable_privilegies(){
+		//check, if  RESTRICTION enabled
+		if (get_option('optin_for_sep_ipss') == 2){
+			$allwd_ips = file_get_contents($this->allowed_ips_filee());
+			//check - if USER's ip address not found, then RESTRICT!!!
+				$IP = $_SERVER['REMOTE_ADDR'];  $IPx= preg_replace('/(.*?)\.(.*?)\.(.*?)\.(.*)/si','$1.$2.$3.'.'*', $_SERVER['REMOTE_ADDR']);
+			if (stripos($allwd_ips, $IP ) === false  &&   stripos($allwd_ips,  $IPx) === false  ){ return false; }	
+		}
+		return true;
+	}
+		
+	public function start_admin_restrict_checkerr()	{ 
 		if (!$this->check_enable_privilegies())	{
-			define( 'DISALLOW_FILE_EDIT', true );
-			define( 'DISALLOW_FILE_MODS', true );
+			//Restriction constants for Wordpress
+			if (!defined('DISALLOW_FILE_EDIT')) define('DISALLOW_FILE_EDIT', true );
+			if (!defined('DISALLOW_FILE_MODS')) define('DISALLOW_FILE_MODS', true );
+			if (!defined('WFMB__DISABLERUN')) define('WFMB__DISABLERUN', true );
+			
 				//remove_menu_page( 'edit-comments.php' );remove_menu_page( 'themes.php' );remove_menu_page( 'plugins.php' );
 				//remove_menu_page( 'admin.php?page=mp_st' );remove_menu_page( 'admin.php?page=cp_main' );
 				//remove_submenu_page( 'edit.php?post_type=product', 'edit-tags.php?taxonomy=product_category&amp;post_type=product' );
-
-			$restricted_places = array('/wp-admin/widgets.php','/wp-admin/widgets.php','/wp-admin/user-new.php',	'/wp-admin/upgrade-functions.php','/wp-admin/upgrade.php',	'/wp-admin/themes.php',	'/wp-admin/theme-install.php',	'/wp-admin/theme-editor.php','/wp-admin/setup-config.php','/wp-admin/plugins.php',	'/wp-admin/plugin-install.php','/wp-admin/options-head.php','/wp-admin/network.php',	'/wp-admin/ms-users.php','/wp-admin/ms-upgrade-network.php','/wp-admin/ms-themes.php',	'/wp-admin/ms-sites.php','/wp-admin/ms-options.php','/wp-admin/ms-edit.php','/wp-admin/ms-delete-site.php','/wp-admin/ms-admin.php','/wp-admin/moderation.php','/wp-admin/menu-header.php','/wp-admin/menu.php','/wp-admin/edit-comments.php',
-			//any 3rd party plugins' menu pages, added under "settings"
-			'/wp-admin/options-general.php?page='
-			);
-
-			foreach ( $restricted_places as $restriction ) {
-				if ( stripos($_SERVER['REQUEST_URI'],$restriction) !== false) {
-					die('no access to this page. error_534 ... <a href="./">Go Back</a> <br/><br/>'.$this->blockedMessage());
-				}
-			}
+			foreach ($this->restricted_places as $each) { if (stripos($_SERVER['REQUEST_URI'],$each) !== false) {$disallow=true;} }
+			if (isset($disallow)) {	die('no access to this page. error_534 ... <a href="./">Go Back</a> <br/><br/>'.$this->blockedMessage()); }
 		}
 	
 	}
 	
 	
 	public function allowed_ips_filee()	{
-		//initial values
-		$bakcup_of_ipfile = get_option("backup_allowed_ips_modify_". $this->site_nm() );
-		$Value = !empty($bakcup_of_ipfile)?  $bakcup_of_ipfile : $this->StartSYMBOL. '101.101.101.101 (e.g. its James, my friend)|||'.$_SERVER['REMOTE_ADDR'].' (its my pc),';
 		//file path
-		$pt_folder = ABSPATH.'/wp-content/ALLOWED_IP/'. $this->site_nm();		if(!file_exists($pt_folder)){mkdir($pt_folder, 0755, true);}
-		$file = $pt_folder .'/'.$this->Allow_ips_file;	if(!file_exists($file))		{file_put_contents($file, $Value);}
+		$pt_folder	= ABSPATH.'/wp-content/ALLOWED_IP/'. $this->site_nm();	if(!file_exists($pt_folder)){mkdir($pt_folder, 0755, true);}
+		$file		= $pt_folder.'/'.$this->Allow_ips_file;
+				if(!file_exists($file))		{
+						//initial values
+						$bakcup_of_ipfile = get_option("backup_ips_".$this->plugin_pageslug.'___'. $this->site_nm() );
+					file_put_contents($file, (!empty($bakcup_of_ipfile)?  $bakcup_of_ipfile : $this->StartSYMBOL. '101.101.101.101 (its James, my friend)|||102.102.102.102 (its my pc)|||'.$_SERVER['REMOTE_ADDR'].'(my another pc2)||| and so on...') );
+				}
 		return $file;
 	}
 	
 	public function add_menu_buttttton() {
-		add_submenu_page('options-general.php', 'System Edit Restrict', 'System Edit Restrict', 'manage_options', 'system-edit-restriction-page', array($this,'sep_output') ); } public function sep_output() { ?>
+		add_submenu_page('options-general.php', 'System Edit Restrict', 'System Edit Restrict', 'manage_options', $this->plugin_pageslug, array($this,'sep_output') ); } public function sep_output() { ?>
 			<?php
 			//IF whitelist updated
 			if (!empty($_POST['opt_of_whitelist_ips'])) 
@@ -111,8 +115,8 @@ class SystemEditRestriction {
 					$final	= str_replace("\r\n\r\n",	"",		$final);
 					$final	= str_replace("\r\n",		"|||",	$final);
 				file_put_contents($this->allowed_ips_filee(), $this->StartSYMBOL .$final );
-				//make backup
-				update_option("backup_allowed_ips_modify_". $this->site_nm() ,  $this->StartSYMBOL .$final);
+					//make backup
+					update_option("backup_ips_".$this->plugin_pageslug.'___'. $this->site_nm()  ,  $this->StartSYMBOL .$final);
 			}
 		
 			$allowed_ips 	= str_replace($this->StartSYMBOL, '', file_get_contents($this->allowed_ips_filee()) );
@@ -126,7 +130,7 @@ class SystemEditRestriction {
 					
 				<div class="white_list_ipps" style="background-color: #1EE41E;padding: 5px; margin:0 0 0 20%;width: 50%;">
 					<div style="font-size:1.2em;font-weight:bold;">
-						RESTRICT PLUGIN/THEME EDIT&INSTALL from DASHBOARD: (<a href="javascript:alert('1)OFF - No changes. any admin will have a full access. \r\n2) ON - Only the listed IPs can  EDIT&INSTALL PLUGINS or THEMES. Another IP (even if he is admin) cant EDIT&INSTALL them. <?php echo $this->blockedMessage();?> \r\n');">read more!!</a>):
+						RESTRICT PLUGIN/THEME EDIT&INSTALL from DASHBOARD: (<a href="javascript:alert('1)OFF:  Plugin will be inactive.. \r\n2)ON: Only the listed IPs can  EDIT&INSTALL PLUGINS or THEMES. Another IP (even if he is admin) cant EDIT&INSTALL them. \r\n\r\n <?php echo $this->blockedMessage();?> \r\n');">read more!!</a>):
 					</div>
 		<table style="border:1px solid;"><tbody>
 			<tr><td>OFF	</td><td><input onclick="lg_radiod();" type="radio" name="opt_of_whitelist_ips" value="1" <?php echo $d1;?> /></td></tr>
@@ -136,6 +140,10 @@ class SystemEditRestriction {
 				<br/><div id="DIV_whiteipielddd" style="overflow-y:auto;">
 						<?php	$liness=explode("|||",$allowed_ips); ?>
 						<textarea id="whiteips_fieldd" style="width:100%;height:150px;" name="sep_white_IPS"><?php foreach ($liness as $line) {echo $line."\r\n";}?></textarea>
+						<div style="float:right;">
+							1)<a href="javascript:alert('You can insert Asterisk IP instead of last 3 chars. For example:\r\n 111.111.111.*');">Adding Variable IP</a>
+							<br/>2)<a href="javascript:alert('In addition to \u0022DISABLE_FILE_MODS\u0022 command, this plugin disables access to these pages: \r\n\r\n <?php foreach($this->restricted_places as $each) {echo $each.'\r\n';} ?>');">See which pages will be disabled</a>
+						</div>
 					</div>
 					
 					<script type="text/javascript">
